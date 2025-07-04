@@ -1,13 +1,23 @@
 from typing import List, Dict, Literal
 import os
 import requests
+import yaml
 
 # 支持的图片源
 ImageSource = Literal["tavily", "bing", "google", "duckduckgo"]
 
 # Bing API配置（用户提供）
-BING_API_KEY = "6dfaf2857bf14fafaab261401fe2c75a"
+BING_API_KEY = ""
 BING_IMAGE_SEARCH_URL = "https://api.bing.microsoft.com/v7.0/images/search"
+
+
+def get_search_engine():
+    config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.yaml')
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            config = yaml.safe_load(f)
+        return config.get('search_engine', 'bing')
+    return 'bing'
 
 
 def search_images(
