@@ -1,0 +1,22 @@
+用户请求搜图
+   ↓
+get_web_search_tool（选择 Tavily）
+   ↓
+TavilySearchResultsWithImages（include_images=True）
+   ↓
+EnhancedTavilySearchAPIWrapper.raw_results（API 请求）
+   ↓
+Tavily API 返回图片及描述
+   ↓
+clean_results_with_images 结构化输出
+   ↓
+前端展示图片
+
+
+
+核心入口：在 src/tools/search.py 文件中，get_web_search_tool 函数会根据配置选择不同的搜索引擎。如果选择了 Tavily（SearchEngine.TAVILY），就会实例化 TavilySearchResultsWithImages 工具，并设置 include_images=True 和 include_image_descriptions=True，确保返回结果中包含图片及其描述。
+Tavily 搜索实现：TavilySearchResultsWithImages（见 src/tools/tavily_search/tavily_search_results_with_images.py）继承自 Langchain 的 Tavily 搜索工具，并重写了 _run 和 _arun 方法。它会调用 EnhancedTavilySearchAPIWrapper 的 raw_results 方法，向 Tavily API 发送请求，参数中明确包含 include_images 和 include_image_descriptions。
+API 调用与结果处理：
+EnhancedTavilySearchAPIWrapper（见 src/tools/tavily_search/tavily_search_api_wrapper.py）负责实际与 Tavily API 通信。它会将图片相关参数一并发送，API 返回的结果中会包含图片链接和描述。
+返回的原始结果会通过 clean_results_with_images 方法进行清洗，最终输出的结果列表中，图片会以 {"type": "image", "image_url": ..., "image_description": ...} 的结构返回。
+最终效果：当用户在前端发起“搜图”请求时，后端会通过上述流程调用 Tavily 搜索，获取并返回包含图片及描述的结构化结果，前端即可展示图片。
